@@ -17,10 +17,10 @@
     --color-input-primary: #f6f8fa;
     --color-input-secondary: #fafbfc;
     --color-input-border: #eaecef;
+    font-size: 14px;
 }
 
 body {
-    font-size: 14px;
     margin: 0;
     padding: 0;
     background-color: #fff;
@@ -37,7 +37,7 @@ p,a,h1 {
     display: grid;
     align-items: center;
     justify-content: center;
-    margin: 5em;
+    margin: 5rem;
 }
 
 .form-section {
@@ -105,4 +105,27 @@ p,a,h1 {
 .form-answer-incorrect {
     background-color: var(--color-text-highlight-red);
     pointer-events: none;
+}
+
+@media screen and (max-width: 980px) {
+    :root {
+        font-size: 12px;
+    }
+
+    .primaryfield {
+        margin: 0;
+    }
+    
+    .form-sectioninfo {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
+    }
+
+    .form-sectioninfo h1 {
+        font-size: 3rem;
+    }
+
+    .form-questionfield {
+        margin: 0;
+    }
 }

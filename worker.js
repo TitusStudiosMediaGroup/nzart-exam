@@ -32,7 +32,7 @@ const template = {
     "template-section" : {
         "type" : "element",
         "tag" : "div",
-        "return" : "true",
+        "return" : true,
         "attributes" : [
             {
                 "name" : "class",
@@ -44,7 +44,7 @@ const template = {
             },
             {
                 "name" : "allowuniqueid",
-                "value" : "true"
+                "value" : true
             }
         ],
         "content" : [
@@ -68,7 +68,7 @@ const template = {
                             },
                             {
                                 "name" : "allowuniqueid",
-                                "value" : "true"
+                                "value" : true
                             }
                         ],
                         "content" : [
@@ -88,7 +88,7 @@ const template = {
                             },
                             {
                                 "name" : "allowuniqueid",
-                                "value" : "true"
+                                "value" : true
                             }
                         ],
                         "content" : [
@@ -101,12 +101,12 @@ const template = {
                 ]
             }
         ],
-        "root" : "true"
+        "root" : true
     },
     "template-questionfield" : {
         "type" : "element",
         "tag" : "form",
-        "return" : "true",
+        "return" : true,
         "attributes" : [
             {
                 "name" : "class",
@@ -118,11 +118,11 @@ const template = {
             },
             {
                 "name" : "allowuniqueid",
-                "value" : "true"
+                "value" : true
             }
         ],
         "content" : [],
-        "root" : "true"
+        "root" : true
     },
     "template-answerfield" : {
         "content" : [
@@ -136,7 +136,7 @@ const template = {
                     },
                     {
                         "name" : "allowuniqueid",
-                        "value" : "true"
+                        "value" : true
                     }
                 ],
                 "content" : [
@@ -149,7 +149,7 @@ const template = {
             {
                 "type" : "element",
                 "tag" : "div",
-                "return" : "true",
+                "return" : true,
                 "attributes" : [
                     {
                         "name" : "class",
@@ -159,7 +159,7 @@ const template = {
                 "content" : []
             }
         ],
-        "root" : "true"
+        "root" : true
     },
     "template-radioinputs" : {
         "content" : [
@@ -189,7 +189,7 @@ const template = {
                     },
                     {
                         "name" : "allowuniqueid",
-                        "value" : "true"
+                        "value" : true
                     }
                 ],
                 "content" : []
@@ -208,7 +208,7 @@ const template = {
                     },
                     {
                         "name" : "allowuniqueid",
-                        "value" : "true"
+                        "value" : true
                     }
                 ],
                 "content" : [
@@ -219,7 +219,7 @@ const template = {
                 ]
             }
         ],
-        "root" : "true"
+        "root" : true
     }
 }
 
@@ -229,96 +229,113 @@ const templates = template//JSON.parse(template);
 let ParentTable = [];
 let ElementTable = [];
 
-function createElement(item,index,arr,parent,qid){
-    switch(item.type){
-        case "element":
-            let Element = document.createElement(item.tag);
-            parent.append(Element);
-            parent = Element;
+function createElement(item,parent,qid) {
+    if(item.type == "element") {
+        let Element = document.createElement(item.tag);
+        parent.append(Element);
+        parent = Element;
 
-            if(typeof item.content[0] !== "undefined"){
-                switch(item.content[0].type){
-                    case "text":
-                        if(ParentTable.length > 0) parent = ParentTable.pop();
-                        console.log(item.content[0].value)
-                        Element.innerHTML = item.content[0].value;
-                        break;
-                    default:
-                        if(item.content.length > 0) ParentTable.push(Element);
+        if(typeof item.content[0] !== "undefined") {
+            if(item.content[0].type == "text") {
+                if(ParentTable.length > 0) {
+                    parent = ParentTable.pop();
                 }
 
-                if(item.content.length == 0 && ParentTable.length > 0) parent = ParentTable.pop();
+                Element.innerHTML = item.content[0].value;
+            }
+            else {
+                if(item.content.length > 0) ParentTable.push(Element);
             }
 
-            function applyAttributes(item2,index2,arr2,quid){
-                Element.setAttribute(item2.name,item2.value);
-
-                if(item2.name == "allowuniqueid" && item2.value == "true"){
-                    Element.setAttribute("id",Element.getAttribute("id") + quid);
-                }
+            if(item.content.length == 0 && ParentTable.length > 0) {
+                parent = ParentTable.pop();
             }
+        }
 
-            item.attributes.forEach(item => applyAttributes(item,index,arr,qid));
-            item.content.forEach(item => createElement(item,index,arr,parent,qid));
+        function applyAttributes(attribute,quid) {
+            Element.setAttribute(attribute.name,attribute.value);
 
-            if(item.return == "true") ElementTable.push(Element);
-        break;
-        case "text":
-            return;
-        default:
-            item.content.forEach(item => createElement(item,index,arr,parent,qid));
+            if(attribute.name == "allowuniqueid" && attribute.value == true) {
+                Element.setAttribute("id",Element.getAttribute("id") + quid);
+            }
+        }
+
+        item.attributes.forEach(item => applyAttributes(item,qid));
+        item.content.forEach(item => createElement(item,parent,qid));
+
+        if(item.return == true) {
+            ElementTable.push(Element);
+        }
+    }
+    else if(item.type != "text") {
+        item.content.forEach(item => createElement(item,parent,qid));
     }
 
-    if(item.root == "true") return ElementTable.pop();
+    if(item.root == true) {
+        return ElementTable.pop();
+    }
 }
 
-function createSection(item){ //kinda ugly but it works.
+function createID(prefix) {
+    if(typeof prefix !== "undefined") {
+        return (prefix + '_' + (performance.now().toString(36) + Math.random().toString(36)).replace(/\./g,""));
+    }
+    else {
+        return ('_' + (performance.now().toString(36) + Math.random().toString(36)).replace(/\./g,""));
+    }
+}
+
+function createSection(item) { //kinda ugly but it works.
     let Parent = document.getElementById("generate");
-    let section_ident = ('_' + Math.random().toString(36).substr(2,9));
-    let section = createElement(templates["template-section"],undefined,undefined,Parent,section_ident);
+    let section_ident = createID();
+    let section = createElement(templates["template-section"],Parent,section_ident);
     let SectionTitle = document.getElementById("sectiontitle" + section_ident);
     let SectionTotal = document.getElementById("sectiontotal" + section_ident);
 
     SectionTitle.innerHTML = item[1].sectiontitle;
     SectionTotal.innerHTML = item[1].sectionquestions.length > 1 ? "("+item[1].sectionquestions.length+" questions)" : "("+item[1].sectionquestions.length+" question)";
     
-    function createQuestions(item2,index,arr,form,formid,answer){
-        let question_ident = ('_' + Math.random().toString(36).substr(2,9));
-        let questions = createElement(templates["template-radioinputs"],undefined,undefined,form,question_ident);
+    function createQuestions(section_item,index,form,formid,answer) {
+        let question_ident = createID();
+        let questions = createElement(templates["template-radioinputs"],form,question_ident);
         let QuestionLabel = document.getElementById("questionlabel" + question_ident);
         let QuestionInput = document.getElementById("questioninput" + question_ident);
 
-        QuestionLabel.innerHTML = item2;
+        QuestionLabel.innerHTML = section_item;
         QuestionLabel.setAttribute("name",QuestionLabel.getAttribute("name") + formid);
         QuestionInput.setAttribute("name",QuestionInput.getAttribute("name") + formid);
 
-        if((index + 1) == answer) QuestionInput.setAttribute("answer","true");
+        if((index + 1) == answer) {
+            QuestionInput.setAttribute("answer",true);
+        }
     }
 
-    function createField(item3,index3,arr3){
-        let formid = ('_' + Math.random().toString(36).substr(2,9));
-        let field = createElement(templates["template-questionfield"],undefined,undefined,section,formid);
-        let form = createElement(templates["template-answerfield"],undefined,undefined,field,section_ident);
+    function createField(question_item) {
+        let formid = createID();
+        let field = createElement(templates["template-questionfield"],section,formid);
+        let form = createElement(templates["template-answerfield"],field,section_ident);
         let QuestionTitle = document.getElementById("question" + section_ident);
-        let CorrectAnswer = item3.correctanswer;
+        let CorrectAnswer = question_item.correctanswer;
 
-        QuestionTitle.innerHTML = item3.questiontitle;
-        item3.options.forEach((item,index,arr) => createQuestions(item,index,arr,form,formid,CorrectAnswer));
+        QuestionTitle.innerHTML = question_item.questiontitle;
+        question_item.options.forEach((item,index) => createQuestions(item,index,form,formid,CorrectAnswer));
     }
 
-    item[1].sectionquestions.forEach((item,index,arr) => createField(item,index,arr));
+    item[1].sectionquestions.forEach(item => createField(item));
 }
 
-function SubmitField(input){
+function SubmitField(input) {
     let field = document.getElementById("field" + input.getAttribute("name"));
-    if(field.getAttribute("class").includes("form-answer-correct") || field.getAttribute("class").includes("form-answer-incorrect")) return;
 
-    switch(input.getAttribute("answer")){
-        case "true":
-            field.setAttribute("class",field.getAttribute("class") + " form-answer-correct");
-        break;
-        default:
-            field.setAttribute("class",field.getAttribute("class") + " form-answer-incorrect");
+    if(field.getAttribute("class").includes("form-answer-correct") || field.getAttribute("class").includes("form-answer-incorrect")) {
+        return;
+    }
+
+    if(input.getAttribute("answer") == "true") {
+        field.setAttribute("class",field.getAttribute("class") + " form-answer-correct");
+    }
+    else {
+        field.setAttribute("class",field.getAttribute("class") + " form-answer-incorrect");
     }
 }
 

@@ -333,7 +333,24 @@ const template = {
     }
 }
 
-//https://www.nzart.org.nz/assets/learn/exam/NZART-Question-Bank-With-Answers-062018-1.pdf
+/*
+question database: https://www.nzart.org.nz/assets/learn/exam/NZART-Question-Bank-With-Answers-062018-1.pdf
+todo:
+    - add browser varibles for choosing exam settings
+    - settings:
+        - all 600 questions
+        - 2 hour limit (shows timer)
+        - real time grading
+        - light/dark mode?
+        - export report?
+    - homepage aerofur.nz/nzart
+        - will have exam information and resources (such as the 40/60 pass rate)
+    - publish to aerofur.nz/nzart/exam
+        - will redirect you to /exam for exam tester
+        - maybe redirect to /results for exam results (if storing in database)?
+    - add "next steps" when you pass the exam
+    - remove test section from html
+*/
 
 const solutions = dataset//JSON.parse(dataset);
 const templates = template//JSON.parse(template);
@@ -341,7 +358,7 @@ const templates = template//JSON.parse(template);
 let ParentTable = [];
 let ElementTable = [];
 
-function createElement(item,Parent,qid)
+function createElement(item,Parent,uid)
 {
     if(item.type == "element")
     {
@@ -371,13 +388,13 @@ function createElement(item,Parent,qid)
             }
         }
 
-        function applyAttributes(attribute,quid)
+        function applyAttributes(attribute,id)
         {
             Element.setAttribute(attribute.name,attribute.value);
 
             if(attribute.name == "allowuniqueid" && attribute.value == true)
             {
-                Element.setAttribute("id",Element.getAttribute("id") + quid);
+                Element.setAttribute("id",Element.getAttribute("id") + id);
             }
             else if(attribute.name == "class")
             {
@@ -385,8 +402,8 @@ function createElement(item,Parent,qid)
             }
         }
 
-        item.attributes.forEach(item => applyAttributes(item,qid));
-        item.content.forEach(item => createElement(item,Parent,qid));
+        item.attributes.forEach(item => applyAttributes(item,uid));
+        item.content.forEach(item => createElement(item,Parent,uid));
 
         if(item.return == true)
         {
@@ -395,7 +412,7 @@ function createElement(item,Parent,qid)
     }
     else if(item.type != "text")
     {
-        item.content.forEach(item => createElement(item,Parent,qid));
+        item.content.forEach(item => createElement(item,Parent,uid));
     }
 
     if(item.root == true)
